@@ -1,0 +1,55 @@
+also readme of this here --> https://github.com/traviicii/kekambas146-widget/blob/main/readme.md
+
+
+npm init 
+npm i typescript --save-dev  (i think you could tack on ts-loader right here instead of line 4)
+npm i --save-dev webpack webpack-cli
+npm install --save-dev ts-loader
+tsc --init  (creates tscjson file)
+    "module": "Node16",
+    "moduleResolution": "Node16"
+    "allowJs": true,
+    "outDir": "./dist",
+    "noImplicitAny": true,                            /* Enable error reporting for expressions and declarations with an implied 'any' type. */
+    "strictNullChecks": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true, 
+    "noImplicitOverride": true, 
+create webpack.config.js in root directory
+    paste:
+        const path = require('path');
+
+        module.exports = {
+        entry: './src/index.ts',
+        module: {
+            rules: [
+            {
+                test: /\.tsx?$/,
+                use: 'ts-loader',
+                exclude: /node_modules/,
+            },
+            ],
+        },
+        resolve: {
+            extensions: ['.tsx', '.ts', '.js'],
+        },
+        output: {
+            filename: 'bundle.js',
+            path: path.resolve(__dirname, 'dist'),
+        },
+        };
+create new folder src 
+    index.ts inside of that 
+npx webpack    in terminal (creates bundle.js file)
+in index.html --> <script src="bundle.js"></script>
+    then whatever you have in your index.ts will show on live server(console)
+npm install live-server
+npm install npm-run-all --save-dev
+
+in package.json scripts
+    "start": "npm run bundle && npm-run-all --parallel watch serve",
+      "bundle": "webpack",
+      "watch": "webpack --watch",
+      "serve": "cd dist && live-server"
+
+npm run start - in terminal to go with live refresh and control c to quit
