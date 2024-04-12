@@ -10,11 +10,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Component = exports.Canvas = void 0;
+exports.CircleContainer = exports.RightLeaningContainer = exports.LeftLeaningContainer = exports.Component = exports.Canvas = void 0;
 const Canvas_1 = __importDefault(__webpack_require__(2));
 exports.Canvas = Canvas_1.default;
 const Component_1 = __importDefault(__webpack_require__(3));
 exports.Component = Component_1.default;
+const containers_1 = __webpack_require__(20);
+Object.defineProperty(exports, "LeftLeaningContainer", ({ enumerable: true, get: function () { return containers_1.LeftLeaningContainer; } }));
+Object.defineProperty(exports, "RightLeaningContainer", ({ enumerable: true, get: function () { return containers_1.RightLeaningContainer; } }));
+Object.defineProperty(exports, "CircleContainer", ({ enumerable: true, get: function () { return containers_1.CircleContainer; } }));
 
 
 /***/ }),
@@ -24,9 +28,10 @@ exports.Component = Component_1.default;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 class Canvas {
-    constructor(parent, _components = []) {
+    constructor(parent, _components = [], _state = {}) {
         this.parent = parent;
         this._components = _components;
+        this._state = _state;
         this.parent.innerHTML = '';
         this.parent.id = 'canvas';
         const newStyle = {
@@ -39,6 +44,13 @@ class Canvas {
             aspectRatio: '1 / 1'
         };
         Object.assign(this.parent.style, newStyle);
+    }
+    get state() {
+        return this._state;
+    }
+    set state(value) {
+        this._state = Object.assign(Object.assign({}, this.state), value);
+        this.render();
     }
     get components() {
         return this._components;
@@ -58,6 +70,7 @@ class Canvas {
         for (let component of this.components) {
             let div = this.initializeComponentDiv(component);
             this.placeComponent(component, div);
+            this.injectState(component, div);
         }
     }
     initializeComponentDiv(component) {
@@ -79,6 +92,8 @@ class Canvas {
         Object.assign(div.style, newStyle);
         // Set up the shape for the component
         Object.assign(div.style, component.shape.attributes);
+        // Set the innerHTML of the div to the component's content
+        div.innerHTML = component.content;
         return div;
     }
     placeComponent(component, div) {
@@ -90,6 +105,15 @@ class Canvas {
         };
         Object.assign(div.style, newStyle);
         this.parent.append(div);
+    }
+    injectState(component, div) {
+        div.innerHTML = component.content;
+        let key;
+        for (key in this.state) {
+            if (div.innerHTML.includes(`{{ ${key} }}`)) {
+                div.innerHTML = div.innerHTML.split(`{{ ${key} }}`).join(this.state[key]);
+            }
+        }
     }
 }
 exports["default"] = Canvas;
@@ -1099,7 +1123,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.RightLeaningContainer = exports.LeftLeaningContainer = void 0;
+exports.CircleContainer = exports.RightLeaningContainer = exports.LeftLeaningContainer = void 0;
 const Container_1 = __importDefault(__webpack_require__(21));
 class LeftLeaningContainer extends Container_1.default {
     constructor() {
@@ -1115,6 +1139,13 @@ class RightLeaningContainer extends Container_1.default {
     }
 }
 exports.RightLeaningContainer = RightLeaningContainer;
+class CircleContainer extends Container_1.default {
+    constructor() {
+        super();
+        this.borderRadius = '50%';
+    }
+}
+exports.CircleContainer = CircleContainer;
 
 
 /***/ }),
@@ -1218,23 +1249,33 @@ var exports = __webpack_exports__;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const Widget_1 = __webpack_require__(1);
 const canvas = new Widget_1.Canvas(document.body);
+canvas.state = { action: 'rules', firstName: 'Connor', city: 'SD' };
 console.log(canvas);
 const firstComponent = new Widget_1.Component();
+firstComponent.shape = new Widget_1.CircleContainer();
 console.log(firstComponent);
 console.log(firstComponent.shape);
 console.log(firstComponent.shape.attributes);
 firstComponent.height = 4;
 firstComponent.width = 4;
 firstComponent.locationLeft = 3;
-firstComponent.shape.backgroundColor = 'green';
+firstComponent.shape.backgroundColor = 'red';
 firstComponent.shape.borderStyle = 'dashed';
 firstComponent.shape.borderWidth = '5px';
 canvas.addComponent(firstComponent);
 const secondComponent = new Widget_1.Component();
+secondComponent.shape = new Widget_1.RightLeaningContainer();
 secondComponent.locationLeft = 4;
 secondComponent.locationTop = 2;
-secondComponent.shape.zIndex = 5;
+secondComponent.shape.zIndex = 1;
+secondComponent.content = '<h3>Masters {{ action }}!</h3>';
 canvas.addComponent(secondComponent);
+const newComponent = new Widget_1.Component();
+newComponent.locationLeft = 3;
+newComponent.locationTop = 5;
+newComponent.content = '<p>Hello I am {{ firstName }} from {{ city }}';
+canvas.state = { city: 'New York' };
+canvas.addComponent(newComponent);
 
 })();
 

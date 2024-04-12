@@ -1,7 +1,12 @@
 import Component from './Component';
+import { State } from'./types';
 
 export default class Canvas{
-    constructor(private parent:HTMLElement, private _components: Component[] = []){
+    constructor(
+        private parent:HTMLElement, 
+        private _components: Component[] = [],
+        private _state: State = {}
+    ){
         this.parent.innerHTML = '';
         this.parent.id = 'canvas';
         const newStyle: Partial<CSSStyleDeclaration> = {
@@ -14,6 +19,15 @@ export default class Canvas{
             aspectRatio: '1 / 1'
         }
         Object.assign(this.parent.style, newStyle);
+    }
+
+    public get state(): State {
+        return this._state
+    }
+
+    public set state(value: State){
+        this._state = {...this.state, ...value};
+        this.render()
     }
 
     public get components(): Component[] {
@@ -36,6 +50,7 @@ export default class Canvas{
         for (let component of this.components){
             let div = this.initializeComponentDiv(component);
             this.placeComponent(component, div);
+            this.injectState(component, div);
         }
     }
 
@@ -58,6 +73,8 @@ export default class Canvas{
         Object.assign(div.style, newStyle);
         // Set up the shape for the component
         Object.assign(div.style, component.shape.attributes);
+        // Set the innerHTML of the div to the component's content
+        div.innerHTML = component.content
         return div
     }
 
@@ -71,5 +88,17 @@ export default class Canvas{
         Object.assign(div.style, newStyle);
         this.parent.append(div);
     }
+
+
+    private injectState(component:Component, div:HTMLDivElement):void {
+        div.innerHTML = component.content;
+        let key: keyof State;
+        for (key in this.state){
+            if (div.innerHTML.includes(`{{ ${key} }}`)){
+                div.innerHTML = div.innerHTML.split(`{{ ${key} }}`).join(this.state[key])
+            }
+        }
+    }
+
 }
 
